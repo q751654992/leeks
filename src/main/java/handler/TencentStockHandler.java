@@ -71,17 +71,35 @@ public class TencentStockHandler extends StockRefreshHandler {
         }
     }
 
+	HashMap<String, Double> codeRecord = new HashMap<>();
     private void parse(String result) {
-        String[] lines = result.split("\n");
+	   // 0: 未知 1: 名字 2: 代码 3: 当前价格 4: 昨收 5: 今开 6: 成交量（手） 7: 外盘 8: 内盘 9: 买一 10: 买一量（手） 11-18: 买二 买五 19: 卖一
+	    // 20: 卖一量 21-28: 卖二 卖五 29: 最近逐笔成交 30: 时间 31: 涨跌 32: 涨跌% 33: 最高 34: 最低 35: 价格/成交量（手）/成交额 36: 成交量（手）
+	    // 37: 成交额（万） 38: 换手率 39: 市盈率 40: 41: 最高 42: 最低 43: 振幅 44: 流通市值 45: 总市值 46: 市净率 47: 涨停价 48: 跌停价
+	    //Double精度问题不重要
+	    String[] lines = result.split("\n");
         for (String line : lines) {
             String code = line.substring(line.indexOf("_") + 1, line.indexOf("="));
             String dataStr = line.substring(line.indexOf("=") + 2, line.length() - 2);
             String[] values = dataStr.split("~");
             StockBean bean = new StockBean(code, codeMap);
             bean.setName(values[1]);
+	        bean.setStartPrice(values[5]);
             bean.setNow(values[3]);
             bean.setChange(values[31]);
-            bean.setChangePercent(values[32]);
+	        String value = values[32];
+	        bean.setChangePercent(value);
+	        Double oldChange = codeRecord.get(code);
+	        double nowChange = Double.parseDouble(value);
+	        if (oldChange != null) {
+		        Double num = nowChange - oldChange;
+		        if (Math.abs(num) >= 0.5) {
+			        LogUtil.notify(code + " 收益变动0.5", true);
+			        codeRecord.put(code, nowChange);
+		        }
+	        } else if (Math.abs(nowChange) >= 1) {
+		        codeRecord.put(code, 1D);
+	        }
             bean.setTime(values[30]);
             bean.setMax(values[33]);//33
             bean.setMin(values[34]);//34

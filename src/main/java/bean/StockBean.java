@@ -11,6 +11,7 @@ import java.util.Objects;
 public class StockBean {
     private String code;
     private String name;
+    private String startPrice;
     private String now;
     private String change;//涨跌
     private String changePercent;
@@ -171,7 +172,15 @@ public class StockBean {
         this.income = income;
     }
 
-    @Override
+	public String getStartPrice() {
+		return startPrice;
+	}
+
+	public void setStartPrice(String startPrice) {
+		this.startPrice = startPrice;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -230,6 +239,8 @@ public class StockBean {
                     timeStr = this.getTime().substring(8);
                 }
                 return timeStr;
+	        case "今开":
+		        return this.getStartPrice();
             default:
                 return "";
 

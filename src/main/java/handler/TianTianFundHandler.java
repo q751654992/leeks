@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import utils.HttpClientPool;
 import utils.LogUtil;
+import utils.ThreadUtils;
 
 import javax.swing.*;
 import java.math.BigDecimal;
@@ -60,7 +61,7 @@ public class TianTianFundHandler extends FundRefreshHandler {
         }
 
         for (String code : codeList) {
-            new Thread(() -> {
+	        ThreadUtils.ioThreadPool.execute(() -> {
                 try {
                     String result = HttpClientPool.getHttpClient().get("http://fundgz.1234567.com.cn/js/" + code + ".js?rt=" + System.currentTimeMillis());
                     String json = result.substring(8, result.length() - 2);
@@ -95,7 +96,7 @@ public class TianTianFundHandler extends FundRefreshHandler {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
         }
         updateUI();
     }
